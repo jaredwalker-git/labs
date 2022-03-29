@@ -4,9 +4,11 @@ import rospy
 import time
 from duckietown_msgs.msg import WheelCmdStamped
 
+#speeds initialized based on joystick commands
 class RosAgent:
-    self.publisher = rospy.Publisher('lane_controller_node/car_cmd', WheelsCmdStamped)
-    self.subscriber = rospy.Subscriber('fsm_node/mode', WheelsCmdStamped, self.callback)
+    def __init__(self):
+        self.publisher = rospy.Publisher('lane_controller_node/car_cmd', WheelsCmdStamped)
+        self.subscriber = rospy.Subscriber('fsm_node/mode', WheelsCmdStamped, self.callback)
     
     def callback(self): #set for half of the square currently
         forward()
