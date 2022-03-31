@@ -2,14 +2,13 @@
 
 import rospy
 import time
-from duckietown_msgs.msg import WheelsCmdStamped
+from duckietown_msgs.msg import WheelsCmdStamped, FSMState
 
 #speeds initialized based on joystick commands
 class RosAgent:
     def __init__(self):
         self.publisher = rospy.Publisher('wheels_driver_node/wheels_cmd', WheelsCmdStamped)
-        #this has type duckietown_msgs/FSMState, probably should be change to LANE_FOLLOWING
-        self.subscriber = rospy.Subscriber('fsm_node/mode', WheelsCmdStamped, self.callback)
+        self.subscriber = rospy.Subscriber('fsm_node/mode', FSMState, self.callback)
     
     def callback(self, msg): #set for half of the square currently
 
