@@ -11,11 +11,11 @@ class RosAgent:
         self.subscriber = rospy.Subscriber('fsm_node/mode', WheelsCmdStamped, self.callback)
     
     def callback(self): #set for half of the square currently
-        forward()
-        wait()
-        turn()
-        forward()
-        wait()
+        self.forward()
+        self.wait()
+        self.turn()
+        self.forward()
+        self.wait()
 
     def forward(self): #function to move 1m
         self.publisher.Publish('{vel_left: 0.47,vel_right: 0.47}')
@@ -23,8 +23,8 @@ class RosAgent:
         self.publisher.Publish('{vel_left: 0.0,vel_right: 0.0}')
         
     def turn(self): #function to turn 90 degrees right
-        self.publisher.Publish('{vel_left: 0.23,vel_right: 0.0}') #turn half speed for accuracy
-        time.sleep(1) #1s is first initialization for turn time
+        self.publisher.Publish('{vel_left: 0.23,vel_right: -0.23}') #turn half speed for accuracy
+        time.sleep(0.5) #0.5s is first initialization for turn time
         self.publisher.Publish('{vel_left: 0.0,vel_right: 0.0}')
 
     def wait(self): #function to wait 5s
