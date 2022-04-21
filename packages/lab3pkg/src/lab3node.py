@@ -5,7 +5,7 @@ import cv2
 import os.path
 from os import path
 import numpy as np
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge
 
 
@@ -15,11 +15,12 @@ class RosAgent:
         self.whitepub = rospy.Publisher('/lab3_white_line', Image, queue_size = 1)
         self.yellowpub = rospy.Publisher('/lab3_yellow_line', Image, queue_size = 1) 
         self.cannykernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
+        self.cvbridge = CvBridge()
         
     def filter_cb(self, img):
         cvimg = self.cvbridge.compressed_imgmsg_to_cv2(img, "bgr8")
         cvimg_resize = cv2.resize(cvimg, (160,120), interpolation=cv2.INTER_NEAREST)
-        cvimg_resize = cvimg_resize[40:,:]
+        self.cvimg_resize = cvimg_resize[40:,:]
         hsvimg = cv2.cvtColor(cvimg_resize, cv2.COLOR_BGR2HSV)
         
         white_filteredhsv = cv2.inRange(hsvimg, (0, 0, 100), (180, 33, 255))
@@ -31,15 +32,7 @@ class RosAgent:
         yellow_filteredhsv = cv2.dilate(yellow_filteredhsv, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4)))
         
         edge_img = cv2.Canny(cvimg_resize, 175, 220) 
-        edge_img = cv2.dilate(edge_image, self.kernel)
-        
-        def create_houghimgmsg(img_overlay):
-            houghlines = []
-            img_overlay = np.array(img_overlay)
-            houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 50)
-            white_line_image = self.output_lines(self.cropped_img, houghlines)
-            line_imgmsg = self.bridge.cv2_to_imgmsg(white_line_image, "bgr8")
-            return line_imgmsg
+        edge_img = cv2.dilate(edge_img, self.kernel)
         
         img_overlay_white = []
         img_overlay_white = np.array(img_overlay_white)
@@ -47,11 +40,19 @@ class RosAgent:
         img_overlay_yellow = []
         img_overlay_yellow = np.array(img_overlay_yellow)
         img_overlay_yellow = cv2.bitwise_and(np.array(yellow_filteredhsv), np.array(edge_img)).astype('uint8')
-        line_msg_white = create_houghimgmsg(img_overlay_white)
-        line_msg_yellow = create_houghimgmsg(img_overlay_yellow)
+        line_msg_white = self.create_houghimgmsg(img_overlay_white)
+        line_msg_yellow = self.create_houghimgmsg(img_overlay_yellow)
                     
         self.whitepub.publish(line_msg_white)
         self.yellowpub.publish(line_msg_yellow)
+
+    def create_houghimgmsg(self, img_overlay):
+        houghlines = []
+        img_overlay = np.array(img_overlay)
+        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 50)
+        white_line_image = self.output_lines(self.cvimg_resize, houghlines)
+        line_imgmsg = self.bridge.cv2_to_imgmsg(white_line_image, "bgr8")
+        return line_imgmsg
         
 if __name__ == "__main__":
     rospy.init_node("lab3node")
