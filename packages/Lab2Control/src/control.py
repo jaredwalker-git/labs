@@ -7,44 +7,56 @@ from duckietown_msgs.msg import WheelsCmdStamped, FSMState
 #speeds initialized based on joystick commands
 class RosAgent:
     def __init__(self):
-        self.publisher = rospy.Publisher('wheels_driver_node/wheels_cmd', WheelsCmdStamped)
+        self.publisher = rospy.Publisher('wheels_driver_node/wheels_cmd', WheelsCmdStamped, queue_size = 1)
         self.subscriber = rospy.Subscriber('fsm_node/mode', FSMState, self.callback)
+        self.wheel_cmd = WheelsCmdStamped()
+    
+    def forward(self): #function to move 1m
+        self.wheel_cmd.vel_left = 0.47
+        self.wheel_cmd.vel_right = 0.47
+        self.publisher.publish(self.wheel_cmd)
+        time.sleep(3.3) #time initialized at 3s for first attempt
+        self.wheel_cmd.vel_left = 0.0
+        self.wheel_cmd.vel_right = 0.0
+        self.publisher.publish(self.wheel_cmd)
+        
+    def turn(self): #function to turn 90 degrees right
+        self.wheel_cmd.vel_left = 0.4
+        self.wheel_cmd.vel_right = -0.4
+        self.publisher.publish(self.wheel_cmd) #turn half speed for accuracy
+        time.sleep(0.5) #1s is first initialization for turn time
+        self.wheel_cmd.vel_left = 0.0
+        self.wheel_cmd.vel_right = 0.0
+        self.publisher.publish(self.wheel_cmd)
+
+    	
+    
     
     def callback(self, msg): #set for half of the square currently
 
         #uses the fsm_state to perform our movement when the lane following demo is started
-        if(msg.state == "LANE_FOLLOWING"):
-            self.wheel_cmd = WheelsCmdStamped()
+        if(msg.state == 'LANE_FOLLOWING'):
+
+            time.sleep(2)
             self.forward()
-            self.wait()
+            time.sleep(2)
             self.turn()
+            time.sleep(2)
             self.forward()
-            self.wait()
-
-    def forward(self): #function to move 1m
-        self.wheel_cmd.vel_left = 0.47
-        self.wheel_cmd.vel_right = 0.47
-        self.publisher.Publish(self.wheel_cmd)
-        time.sleep(2) #time initialized at 3s for first attempt
-        self.wheel_cmd.vel_left = 0.0
-        self.wheel_cmd.vel_right = 0.0
-        self.publisher.Publish(self.wheel_cmd)
-        
-    def turn(self): #function to turn 90 degrees right
-        self.wheel_cmd.vel_left = 0.23
-        self.wheel_cmd.vel_right = -0.23
-        self.publisher.Publish(self.wheel_cmd) #turn half speed for accuracy
-        time.sleep(1) #1s is first initialization for turn time
-        self.wheel_cmd.vel_left = 0.0
-        self.wheel_cmd.vel_right = 0.0
-        self.publisher.Publish(self.wheel_cmd)
-
-    def wait(self): #function to wait 5s
-    	time.sleep(5)
-
-
+            time.sleep(2)
+            self.turn()
+            
+            
+            
+        else:
+            self.wheel_cmd.vel_left = 0.0
+            self.wheel_cmd.vel_right = 0.0
+            self.publisher.publish(self.wheel_cmd)
+            
+            
 if __name__ == '__main__':
     rospy.init_node('onemetersquare')
-    rospy.spin()
     agent = RosAgent()
+    rospy.spin()
+    
 
