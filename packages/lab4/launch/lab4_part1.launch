@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find duckietown_demos)/launch/apriltag_detector.launch"/>
+    <node pkg="lab4" name="Lab4_Part1" type="lab4_part1.py"/>
+</launch>
