@@ -21,10 +21,10 @@ class RosAgent:
         self.publisher.publish(self.wheel_cmd)
         
     def turn(self): #function to turn 90 degrees right
-        self.wheel_cmd.vel_left = 0.4
-        self.wheel_cmd.vel_right = -0.4
+        self.wheel_cmd.vel_left = 0.43
+        self.wheel_cmd.vel_right = -0.43
         self.publisher.publish(self.wheel_cmd) #turn half speed for accuracy
-        time.sleep(0.5) #1s is first initialization for turn time
+        time.sleep(0.4) #1s is first initialization for turn time
         self.wheel_cmd.vel_left = 0.0
         self.wheel_cmd.vel_right = 0.0
         self.publisher.publish(self.wheel_cmd)
