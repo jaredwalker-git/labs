@@ -39,8 +39,6 @@ class Lab4Part1():
             rospy.logerr(forward)
             total_right = forward+angular
             total_left = -angular+forward
-            rospy.logwarn("left before" + str(total_left))
-            rospy.logwarn("right before" + str(total_right))
             if(total_right > 0.5):
                 total_right = 0.5
             elif(total_right < -0.5):
@@ -54,8 +52,6 @@ class Lab4Part1():
             self.wheel_cmd.vel_right =  total_right
             self.wheel_cmd.vel_left = total_left
 
-            rospy.logwarn("left after" + str(total_left))
-            rospy.logwarn("right after" + str(total_right))
             self.pub.publish(self.wheel_cmd)
 
 
