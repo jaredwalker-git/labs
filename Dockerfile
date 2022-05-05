@@ -1,6 +1,6 @@
 # parameters
 ARG REPO_NAME="labs"
-ARG DESCRIPTION="Lab2 repo for UML EECE 5560"
+ARG DESCRIPTION="Lab repo for UML EECE 5560"
 ARG MAINTAINER="Jared Walker (jared_walker@student.uml.edu)"
 # pick an icon from: https://fontawesome.com/v4.7.0/icons/
 ARG ICON="cube"

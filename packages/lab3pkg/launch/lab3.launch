@@ -36,8 +36,8 @@
     </include>
 
     <group ns="$(env VEHICLE_NAME)">
-        <node pkg="lab3pkg" name="lab3node" type="lab3node.py"/>
-        <node pkg="rqt_image_view" type="rqt_image_view" name="image_lines" args="/lab3_white_line"/>
+        <node pkg="lab3pkg" name="lab3node" type="lab3prt2.py"/>
+
     </group>
 
 </launch>

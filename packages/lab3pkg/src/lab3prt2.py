@@ -5,6 +5,7 @@ import cv2
 import os.path
 from os import path
 import numpy as np
+from duckietown_msgs.msg import SegmentList
 from sensor_msgs.msg import CompressedImage, Image
 from cv_bridge import CvBridge
 
@@ -12,11 +13,11 @@ from cv_bridge import CvBridge
 class RosAgent:
     def __init__(self):
         self.camera_sub = rospy.Subscriber('/duckiekong/camera_node/image/compressed', CompressedImage, self.filter_cb, queue_size = 1, buff_size = 2**24)
-        self.whitepub = rospy.Publisher('/lab3_white_line', Image, queue_size = 1)
-        self.yellowpub = rospy.Publisher('/lab3_yellow_line', Image, queue_size = 1) 
-        
+        self.segmentpub = rospy.Publisher('/duckiekong/line_detector_node/segment_list', SegmentList)
         self.cannykernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4,4))
         self.cvbridge = CvBridge()
+        #each line segment is own segment within list
+        self.segment
         
     def filter_cb(self, img):
         self.cvimg = self.cvbridge.compressed_imgmsg_to_cv2(img, "bgr8")
@@ -40,33 +41,27 @@ class RosAgent:
         img_overlay_yellow = []
         img_overlay_yellow = np.array(img_overlay_yellow)
         img_overlay_yellow = cv2.bitwise_and(np.array(yellow_filteredhsv), np.array(edge_img)).astype('uint8')
-        line_msg_white = self.create_houghimgmsg(img_overlay_white)
-        line_msg_yellow = self.create_houghimgmsg(img_overlay_yellow)
-        
-                   
-        self.whitepub.publish(line_msg_white)
-        self.yellowpub.publish(line_msg_yellow)
+        lines_white = self.create_houghlines(img_overlay_white)
+        lines_yellow = self.create_houghlines(img_overlay_yellow)
+        self.white_lines.pixels_normalized = lines_white
+        self.yellow_lines.pixels_normalized = lines_yellow
+        self.whitepub.publish(lines_white)
+        self.yellowpub.publish(lines_yellow)
 
-    def create_houghimgmsg(self, img_overlay):
+    def create_houghlines(self, img_overlay):
         houghlines = []
         img_overlay = np.array(img_overlay)
-        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 50)
-        line_image = self.output_lines(self.cvimg, houghlines)
-        self.cvimg_resize = cv2.resize(line_image, (160,120), interpolation=cv2.INTER_NEAREST)
-        self.cvimg_resize = self.cvimg_resize[40:,:]
-        line_imgmsg = self.cvbridge.cv2_to_imgmsg(self.cvimg_resize, "bgr8")
-        return line_imgmsg
+        img_size = (160,120)
+        offset = 40
+        self.cvimg_resize = cv2.resize(img_overlay, img_size, interpolation=cv2.INTER_NEAREST)
+        self.cvimg_resize = self.cvimg_resize[offset:,:]
+        houghlines = cv2.HoughLinesP(self.cvimg_resize, 1, 3.1415/180, 50)
+        arr_cutoff = np.array([0, offset, 0, offset])
+        arr_ratio = np.array([1. / img_size[0], 1. / img_size[1], 1. / img_size[0], 1. / img_size[1]])
+        normalized = (line + arr_cutoff) * arr_ratio
+        return normalized
         
-    def output_lines(self, original_image, lines):
-        output = np.copy(original_image)
-        if lines is not None:
-            for i in range(len(lines)):
-                l = lines[i][0]
-                cv2.line(output, (l[0],l[1]), (l[2],l[3]), (255,0,0), 2, cv2.LINE_AA)
-                cv2.circle(output, (l[0],l[1]), 2, (0,255,0))
-                cv2.circle(output, (l[2],l[3]), 2, (0,0,255))
-        return output
-        
+
 if __name__ == "__main__":
     rospy.init_node("lab3node")
     rosagent = RosAgent()
