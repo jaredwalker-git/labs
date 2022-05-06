@@ -50,7 +50,8 @@ class RosAgent:
     def create_houghimgmsg(self, img_overlay):
         houghlines = []
         img_overlay = np.array(img_overlay)
-        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 50)
+        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 75)
+        
         line_image = self.output_lines(self.cvimg, houghlines)
         self.cvimg_resize = cv2.resize(line_image, (160,120), interpolation=cv2.INTER_NEAREST)
         self.cvimg_resize = self.cvimg_resize[40:,:]
