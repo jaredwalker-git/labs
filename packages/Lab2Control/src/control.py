@@ -12,24 +12,30 @@ class RosAgent:
         self.wheel_cmd = WheelsCmdStamped()
     
     def forward(self): #function to move 1m
-
-        self.wheel_cmd.vel_left = 0.5
-        self.wheel_cmd.vel_right = 0.5
-        self.publisher.publish(self.wheel_cmd)
-        time.sleep(0.15)
-        self.publisher.publish(self.wheel_cmd)
-        time.sleep(3) #time initialized at 3s for first attempt
+        r = rospy.Rate(10)
+        start_time = rospy.get_time()
+        
+        while ((rospy.get_time() - start_time) < 3.15):
+            self.wheel_cmd.vel_left = 0.49
+            self.wheel_cmd.vel_right = 0.47
+            self.publisher.publish(self.wheel_cmd)
+            r.sleep()
+            
         self.wheel_cmd.vel_left = 0.0
         self.wheel_cmd.vel_right = 0.0
         self.publisher.publish(self.wheel_cmd)
         
     def turn(self): #function to turn 90 degrees right
-        self.wheel_cmd.vel_left = 0.4
-        self.wheel_cmd.vel_right = -0.4
-        self.publisher.publish(self.wheel_cmd) #turn half speed for accuracy
-        time.sleep(0.15) #1s is first initialization for turn time
-        self.publisher.publish(self.wheel_cmd)
-        time.sleep(0.25)        
+
+        r = rospy.Rate(10)
+        start_time = rospy.get_time()
+        
+        while ((rospy.get_time() - start_time) < .8):
+            self.wheel_cmd.vel_left = 0.26
+            self.wheel_cmd.vel_right = -0.26
+            self.publisher.publish(self.wheel_cmd)
+            r.sleep()  
+      
         self.wheel_cmd.vel_left = 0.0
         self.wheel_cmd.vel_right = 0.0
         self.publisher.publish(self.wheel_cmd)
@@ -41,7 +47,7 @@ class RosAgent:
 
         #uses the fsm_state to perform our movement when the lane following demo is started
         if(msg.state == 'LANE_FOLLOWING'):
-
+            
             time.sleep(2)
             self.forward()
             time.sleep(2)
