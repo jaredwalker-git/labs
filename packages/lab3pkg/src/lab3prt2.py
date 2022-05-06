@@ -56,16 +56,16 @@ class RosAgent:
         img_size = (640,480) #og image 640 x480
         offset = 40
         
-        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 75)
+        houghlines = cv2.HoughLinesP(img_overlay, 1, 3.1415/180, 50)
         #self.cvimg_resize = cv2.resize(img_overlay, img_size, interpolation=cv2.INTER_NEAREST)
         #self.cvimg_resize = self.cvimg_resize[offset:,:]
         
-        segment = Segment()
+        
         if houghlines is None:
              rospy.logwarn("No Lines")
         else:
             for l in range(len(houghlines)):
-        
+                segment = Segment()
                 arr_cutoff = np.array([0, offset, 0, offset])
                 arr_ratio = np.array([1. / img_size[0], 1. / img_size[1], 1. / img_size[0], 1. / img_size[1]])
                 normalized_seg = (houghlines[l] + arr_cutoff) * arr_ratio
